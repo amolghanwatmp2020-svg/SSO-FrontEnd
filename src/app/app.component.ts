@@ -22,52 +22,56 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> { // Made ngOnInit async
     console.log('AppComponent: ngOnInit started.');
 
-    // 1. Handle MSAL redirect and process the authentication response
-    // This must be called on every page load to process the redirect response
-    this.msalService.instance.handleRedirectPromise().then((response) => {
-      console.log('AppComponent: handleRedirectPromise next:', response);
-      if (response && response.account) {
-        // If a response is received (e.g., after a successful redirect login)
-        this.msalService.instance.setActiveAccount(response.account);
-      }
-      this.checkAndLoginIfNecessary(); // Check status after processing redirect
-    }).catch((error) => {
-      console.error('AppComponent: MSAL Redirect Error:', error);
-      // Handle login errors, e.g., display a message to the user
-      // It's crucial to still call checkAndLoginIfNecessary() to ensure the app doesn't hang
+    try {
+      // Initialize the MSAL PublicClientApplication instance
+      // This is crucial and must be awaited before any other MSAL operations.
+      await this.msalService.instance.initialize();
+      console.log('AppComponent: MSAL instance initialized.');
+
+      // 1. Handle MSAL redirect and process the authentication response
+      this.msalService.instance.handleRedirectPromise().then((response) => {
+        console.log('AppComponent: handleRedirectPromise next:', response);
+        if (response && response.account) {
+          this.msalService.instance.setActiveAccount(response.account);
+        }
+        this.checkAndLoginIfNecessary(); // Check status after processing redirect
+      }).catch((error) => {
+        console.error('AppComponent: MSAL Redirect Error:', error);
+        this.checkAndLoginIfNecessary();
+      });
+
+      // 2. Listen for account changes (login/logout)
+      this.msalBroadcastService.msalSubject$
+        .pipe(
+          filter((msg: EventMessage) => msg.eventType === EventType.ACCOUNT_ADDED || msg.eventType === EventType.ACCOUNT_REMOVED),
+          takeUntil(this._destroying$)
+        )
+        .subscribe((msg: EventMessage) => {
+          console.log('AppComponent: MSAL account change event:', msg);
+          this.setLoggedInStatus();
+        });
+
+      // 3. Listen for interaction status changes (e.g., after login/logout completes)
+      this.msalBroadcastService.inProgress$
+        .pipe(
+          filter((status: InteractionStatus) => status === InteractionStatus.None),
+          takeUntil(this._destroying$)
+        )
+        .subscribe((status: InteractionStatus) => {
+          console.log('AppComponent: MSAL inProgress status change:', status);
+          this.setLoggedInStatus();
+        });
+
+      // Initial check after everything is set up
       this.checkAndLoginIfNecessary();
-    });
 
-    // 2. Listen for account changes (login/logout)
-    this.msalBroadcastService.msalSubject$
-      .pipe(
-        filter((msg: EventMessage) => msg.eventType === EventType.ACCOUNT_ADDED || msg.eventType === EventType.ACCOUNT_REMOVED),
-        takeUntil(this._destroying$)
-      )
-      .subscribe((msg: EventMessage) => {
-        console.log('AppComponent: MSAL account change event:', msg);
-        this.setLoggedInStatus();
-      });
-
-    // 3. Listen for interaction status changes (e.g., after login/logout completes)
-    this.msalBroadcastService.inProgress$
-      .pipe(
-        filter((status: InteractionStatus) => status === InteractionStatus.None),
-        takeUntil(this._destroying$)
-      )
-      .subscribe((status: InteractionStatus) => {
-        console.log('AppComponent: MSAL inProgress status change:', status);
-        this.setLoggedInStatus();
-      });
-
-    // Initial check for logged-in status (important for direct loads without a redirect)
-    // This will be called if handleRedirectPromise completes without a redirect.
-    // However, it's already called within the handleRedirectPromise subscription's next/error blocks,
-    // so an explicit call here might be redundant but acts as a safety net.
-    // this.checkAndLoginIfNecessary();
+    } catch (msalError) {
+      console.error('AppComponent: Error initializing MSAL instance:', msalError);
+      // You might want to display an error message to the user or redirect to an error page
+    }
   }
 
   // Method to check authentication status and trigger login if necessary
@@ -79,20 +83,29 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!this.isLoggedIn) {
       console.log('User not logged in. Initiating login redirect...');
       // Only initiate login if MSAL is not already in an interaction state
-      // Initiate login only if no interaction is in progress (handled by inProgress$ observable)
-      if (this.msalGuardConfig.interactionType === InteractionType.Popup) {
-        this.msalService.loginPopup({ ...this.msalGuardConfig.authRequest } as RedirectRequest)
-          .subscribe({
-            next: (response: any) => {
-              console.log('AppComponent: Popup login success:', response);
-              this.msalService.instance.setActiveAccount(response.account);
-              this.setLoggedInStatus();
-            },
-            error: (error) => console.error('AppComponent: Popup login error:', error)
-          });
+      // Initiate login only if no interaction is currently in progress
+      let interactionStatus: InteractionStatus | undefined;
+      this.msalBroadcastService.inProgress$
+        .pipe(takeUntil(this._destroying$))
+        .subscribe((status: InteractionStatus) => interactionStatus = status);
+
+      if (interactionStatus === InteractionStatus.None) {
+        if (this.msalGuardConfig.interactionType === InteractionType.Popup) {
+          this.msalService.loginPopup({ ...this.msalGuardConfig.authRequest } as RedirectRequest)
+            .subscribe({
+              next: (response: any) => {
+                console.log('AppComponent: Popup login success:', response);
+                this.msalService.instance.setActiveAccount(response.account);
+                this.setLoggedInStatus();
+              },
+              error: (error) => console.error('AppComponent: Popup login error:', error)
+            });
+        } else {
+          console.log('AppComponent: Redirecting for login...');
+          this.msalService.loginRedirect({ ...this.msalGuardConfig.authRequest } as RedirectRequest);
+        }
       } else {
-        console.log('AppComponent: Redirecting for login...');
-        this.msalService.loginRedirect({ ...this.msalGuardConfig.authRequest } as RedirectRequest);
+        console.log('AppComponent: MSAL is already in an interaction state, not initiating new login.');
       }
     } else {
         console.log('AppComponent: User is already logged in.');

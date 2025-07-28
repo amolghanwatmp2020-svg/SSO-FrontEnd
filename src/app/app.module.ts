@@ -25,11 +25,11 @@ import {
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-// import { RoleGuard } from './guards/role.guard'; // Import your custom RoleGuard
-// import { HomeComponent } from './components/home/home/home.component';
-// import { AdminComponent } from './components/admin/admin/admin.component';
-// import { ProfileComponent } from './components/profile/profile/profile.component';
-// import { UnauthorizedComponent } from './components/unauthorized/unauthorized.component';
+import { RoleGuard } from './guards/role.guard'; // Import your custom RoleGuard
+import { HomeComponent } from './components/home/home/home.component';
+import { AdminComponent } from './components/admin/admin/admin.component';
+import { ProfileComponent } from './components/profile/profile/profile.component';
+import { UnauthorizedComponent } from './components/unauthorized/unauthorized.component';
 
 // Configuration for MSAL PublicClientApplication
 const isIE =
@@ -101,10 +101,10 @@ export function MSALGuardConfigFactory() {
 @NgModule({
   declarations: [
     AppComponent,
-    // HomeComponent,
-    // AdminComponent,
-    // ProfileComponent,
-    // UnauthorizedComponent
+    HomeComponent,
+    AdminComponent,
+    ProfileComponent,
+    UnauthorizedComponent
   ],
   imports: [
     BrowserModule,
@@ -134,7 +134,7 @@ export function MSALGuardConfigFactory() {
     MsalService,
     MsalGuard,
     MsalBroadcastService,
-    // RoleGuard // Provide your custom RoleGuard
+    RoleGuard // Provide your custom RoleGuard
   ],
   bootstrap: [AppComponent, MsalRedirectComponent], // MsalRedirectComponent is crucial for handling redirects
 })
