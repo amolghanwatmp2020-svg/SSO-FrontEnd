@@ -1,1 +1,26 @@
-<p>profile works!</p>
+<div class="card shadow-sm">
+  <div class="card-header bg-success text-white">
+    <h3><i class="bi bi-person-circle"></i> User Profile</h3>
+  </div>
+  <div class="card-body">
+    <p class="card-text">Welcome, <strong>{{ profileData?.name }}</strong>!</p>
+    <p class="card-text">Your email: <strong>{{ profileData?.preferred_username }}</strong></p>
+    <p class="card-text">Your Object ID: <strong>{{ profileData?.oid }}</strong></p>
+    <p class="card-text">Your Tenant ID: <strong>{{ profileData?.tid }}</strong></p>
+    <p class="card-text">Your assigned roles: <strong>{{ profileData?.roles ? (profileData.roles | json) : 'No roles assigned' }}</strong></p>
+    <hr>
+    <p class="card-text">This page is protected and only accessible to authenticated users.</p>
+
+    <h4 class="mt-4">API Calls:</h4>
+    <div class="d-grid gap-2">
+      <button class="btn btn-info mt-2" (click)="callAuthenticatedApi()">Call Authenticated API</button>
+      <div class="alert alert-light mt-1" role="alert">{{ apiResponse }}</div>
+
+      <button class="btn btn-warning mt-2" (click)="callAdminApi()">Call Admin API</button>
+      <div class="alert alert-light mt-1" role="alert">{{ adminApiResponse }}</div>
+
+      <button class="btn btn-primary mt-2" (click)="callUserApi()">Call User API</button>
+      <div class="alert alert-light mt-1" role="alert">{{ userApiResponse }}</div>
+    </div>
+  </div>
+</div>

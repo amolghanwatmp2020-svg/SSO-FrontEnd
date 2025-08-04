@@ -80,7 +80,7 @@ export function MSALInterceptorConfigFactory() {
   const protectedResourceMap = new Map<string, Array<string>>();
   // Map your API endpoints to the required scopes (from your .NET Core API's app registration)
   // Example: 'https://localhost:5001/api' or 'YOUR_API_BASE_URL/api'
-  protectedResourceMap.set('http://localhost:5153/api', ['api://59de5ef0-7b5c-4d4a-833d-e145edc85013']);
+  protectedResourceMap.set('http://localhost:7175/api', ['api://59de5ef0-7b5c-4d4a-833d-e145edc85013/access_as_user']);
 
   return {
     interactionType: InteractionType.Redirect, // Or Popup, depending on your login flow preference
