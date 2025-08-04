@@ -16,7 +16,7 @@ export class ProfileComponent implements OnInit {
   userApiResponse: string = 'No User API call made yet.';
 
   // IMPORTANT: Replace with your actual .NET Core API base URL
-  private readonly API_BASE_URL = 'http://localhost:7175/api';
+  private readonly API_BASE_URL = 'https://sso-b3fkfeb7f9d5hwen.indonesiacentral-01.azurewebsites.net/api';
 
   constructor(private msalService: MsalService, private http: HttpClient) { } // Inject HttpClient
 
