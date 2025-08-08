@@ -37,7 +37,7 @@ stages:
         ArtifactName: 'angular-drop'
         publishLocation: 'Container'
 
-- stage: DeployFrontend ⭐
+- stage: DeployFrontend
   displayName: 'Deploy Angular App'
   jobs:
   - deployment: DeployJob
