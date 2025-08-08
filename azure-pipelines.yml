@@ -36,3 +36,21 @@ stages:
         PathtoPublish: 'dist/angular-demo-sso' # ⭐ IMPORTANT: Update this path
         ArtifactName: 'angular-drop'
         publishLocation: 'Container'
+
+- stage: DeployFrontend ⭐
+  displayName: 'Deploy Angular App'
+  jobs:
+  - deployment: DeployJob
+    displayName: 'Deploy Angular App to Azure App Service'
+    environment: 'SSO CICD' # Optional: Use an Azure DevOps Environment
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            displayName: 'Deploy to Azure App Service'
+            inputs:
+              azureSubscription: 'SSOProductionConnection' # ⭐ Use your service connection name
+              appType: 'webApp'
+              appName: 'sso-fronend' # ⭐ Use your actual Azure Web App name
+              package: '$(Pipeline.Workspace)/angular-drop' # Path to the artifact from the build stage
