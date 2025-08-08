@@ -41,8 +41,8 @@ export function MSALInstanceFactory(): IPublicClientApplication {
    auth: {
       clientId: '41d2efd6-9450-44c0-8402-93c770829813', // Replace with your Angular app's Client ID from Azure AD
       authority: 'https://login.microsoftonline.com/5770dac6-f9fd-4036-ad2a-93d72c8e00e8', // Replace with your Tenant ID or B2C tenant URL (e.g., https://<tenant-name>.b2clogin.com/<tenant-name>.onmicrosoft.com/<policy-name>)
-      redirectUri: 'http://localhost:4200', // Your Angular app's redirect URI (must match Azure AD registration)
-      postLogoutRedirectUri: 'http://localhost:4200', // Where to redirect after logout
+      redirectUri: 'https://sso-fronend-dxa2eccwgjhza2g8.indonesiacentral-01.azurewebsites.net/', // Your Angular app's redirect URI (must match Azure AD registration)
+      postLogoutRedirectUri: 'https://sso-fronend-dxa2eccwgjhza2g8.indonesiacentral-01.azurewebsites.net/', // Where to redirect after logout
     },
     cache: {
       cacheLocation: BrowserCacheLocation.LocalStorage, // Stores tokens in browser's local storage
@@ -81,6 +81,7 @@ export function MSALInterceptorConfigFactory() {
   // Map your API endpoints to the required scopes (from your .NET Core API's app registration)
   // Example: 'https://localhost:5001/api' or 'YOUR_API_BASE_URL/api'
   protectedResourceMap.set('http://localhost:7175/api', ['api://59de5ef0-7b5c-4d4a-833d-e145edc85013/access_as_user']);
+  protectedResourceMap.set('https://sso-backend-bvh7etd9g7dqa3c0.indonesiacentral-01.azurewebsites.net/api', ['api://59de5ef0-7b5c-4d4a-833d-e145edc85013/access_as_user']);
 
   return {
     interactionType: InteractionType.Redirect, // Or Popup, depending on your login flow preference
