@@ -1,9 +1,9 @@
 # azure-pipelines-frontend.yml
 trigger:
-- azure-pipelines # or your working branch name
+- azure-pipelines # or your working branch name (e.g., 'main' or 'sso-azure-manual-deployment')
 
 pool:
-  vmImage: 'ubuntu-latest' # or 'windows-latest'
+  vmImage: 'ubuntu-latest' # 'ubuntu-latest' is generally preferred for Node.js builds
 
 stages:
 - stage: BuildFrontend
@@ -15,22 +15,24 @@ stages:
     - task: NodeTool@0
       displayName: 'Install Node.js'
       inputs:
-        versionSpec: '18.x'
+        versionSpec: '18.x' # Use the Node.js version compatible with your Angular project
 
     - task: Npm@1
       displayName: 'Install Angular dependencies'
       inputs:
         command: 'install'
+        # workingDir: '' # Leave blank if angular.json is at the repo root
 
     - task: Npm@1
       displayName: 'Build Angular app'
       inputs:
         command: 'custom'
         customCommand: 'run build -- --configuration=production'
+        # workingDir: '' # Leave blank if angular.json is at the repo root
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Angular Artifact'
       inputs:
-        PathtoPublish: 'dist/angular-demo-sso' # Adjust this path based on your project name
+        PathtoPublish: 'dist/angular-demo-sso' # ⭐ IMPORTANT: Update this path
         ArtifactName: 'angular-drop'
         publishLocation: 'Container'
